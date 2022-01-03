@@ -1,11 +1,19 @@
 ; nasm -f macho64 hello.asm && ld -macosx_version_min 10.7.0 -lSystem -o hello hello.o && ./hello
 
-global start
+global _start
+
+section .data
+
+msg:    db      "Hello, world!", 10
+.len:   equ     $ - msg
 
 
 section .text
 
-start:
+_start:
+    jmp hello1
+
+hello1:
     mov     rax, 0x2000004 ; write
     mov     rdi, 1 ; stdout
     mov     rsi, msg
@@ -16,8 +24,9 @@ start:
     mov     rdi, 0
     syscall
 
-
-section .data
-
-msg:    db      "Hello, world!", 10
-.len:   equ     $ - msg
+hello2:
+    mov     edx, msg.len    ; number of bytes to write
+    mov     ecx, msg        ; move memory address of msg into ecx
+    mov     ebx, 1          ; write to stdout file
+    mov     eax, 4          ; invoke SYS_WRITE (kernel opcode 4)
+    int     80h
