@@ -1,6 +1,3 @@
-; nasm -f macho64 hello.asm && ld -macosx_version_min 10.7.0 -lSystem -o hello hello.o && ./hello
-; nasm -f elf_x86_64 hello.asm && ld  -o hello hello.o && ./hello
-
 global _start
 
 
@@ -13,13 +10,12 @@ msg:    db      "Hello, world!", 10
 section .text
 
 _start:
-    mov     rax, 0x2000004 ; write
-    mov     rdi, 1 ; stdout
-    mov     rsi, msg
-    mov     rdx, msg.len
-    syscall
+    mov     edx, msg.len    ; number of bytes to write
+    mov     ecx, msg        ; move the mem address of our message into ecx
+    mov     ebx, 1          ; We want to write to stdout
+    mov     eax, 4          ; invoke SYS_WRITE (kernel opcode 4)
+    int     80h             ; request an interrupt on libc
 
-    mov     rax, 0x2000001 ; exit
-    mov     rdi, 0
-    syscall
-
+    mov     ebx, 0          ; return 0 status on exit - 'No Errors'
+    mov     eax, 1          ; invoke SYS_EXIT (kernel opcode 1)
+    int     80h             ; request an interrupt on libc
